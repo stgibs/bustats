@@ -1,0 +1,134 @@
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
+
+CREATE SCHEMA IF NOT EXISTS `bustats` DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci ;
+USE `bustats` ;
+
+-- -----------------------------------------------------
+-- Table `bustats`.`drivers`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `bustats`.`drivers` (
+  `dri_id` INT NOT NULL AUTO_INCREMENT ,
+  `dri_firstname` VARCHAR(45) NULL ,
+  `dri_lastname` VARCHAR(45) NULL ,
+  PRIMARY KEY (`dri_id`) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `bustats`.`vehicles`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `bustats`.`vehicles` (
+  `veh_fleetNumber` INT NOT NULL ,
+  `veh_vin` VARCHAR(17) NULL ,
+  `veh_year` YEAR NULL ,
+  PRIMARY KEY (`veh_fleetNumber`) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `bustats`.`routes`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `bustats`.`routes` (
+  `rou_id` INT NOT NULL ,
+  `rou_routeNumber` VARCHAR(45) NULL ,
+  `rou_routeName` VARCHAR(45) NULL ,
+  `rou_revenueMiles` INT NULL ,
+  `rou_nonRevenueMiles` INT NULL ,
+  `rou_startTime` TIME NULL ,
+  `rou_endTime` TIME NULL ,
+  `rou_monday` TINYINT(1) NULL ,
+  `rou_tuesday` TINYINT(1) NULL ,
+  `rou_wednesday` TINYINT(1) NULL ,
+  `rou_thursday` TINYINT(1) NULL ,
+  `rou_friday` TINYINT(1) NULL ,
+  `rou_saturday` TINYINT(1) NULL ,
+  `rou_sunday` TINYINT(1) NULL ,
+  `rou_active` TINYINT(1) NULL ,
+  `rou_nextbusBlock` INT NULL ,
+  PRIMARY KEY (`rou_id`) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `bustats`.`trips`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `bustats`.`trips` (
+  `tri_id` INT NOT NULL AUTO_INCREMENT ,
+  `tri_date` DATE NOT NULL ,
+  `tri_driver` INT NULL ,
+  `tri_fleetNumber` INT NULL ,
+  `tri_route` INT NULL ,
+  `tri_beginOdometer` INT NULL DEFAULT NULL ,
+  `tri_endOdometer` INT NULL DEFAULT NULL ,
+  `tri_miles` INT NULL DEFAULT 0 ,
+  `tri_revenue` DECIMAL(4,2) NULL DEFAULT 0 ,
+  `tri_paxJMU` INT NULL DEFAULT 0 ,
+  `tri_paxAdult` INT NULL DEFAULT 0 ,
+  `tri_paxAdultCoupon` INT NULL DEFAULT 0 ,
+  `tri_paxEMU` INT NULL DEFAULT 0 ,
+  `tri_paxSenior` INT NULL DEFAULT 0 ,
+  `tri_paxSeniorCoupon` INT NULL DEFAULT 0 ,
+  `tri_paxStudentCoupon` INT NULL DEFAULT 0 ,
+  `tri_paxTransfer` INT NULL DEFAULT 0 ,
+  PRIMARY KEY (`tri_id`) ,
+  INDEX `fk_trips_drivers1_idx` (`tri_driver` ASC) ,
+  INDEX `fk_trips_vehicles1_idx` (`tri_fleetNumber` ASC) ,
+  INDEX `fk_trips_routes1_idx` (`tri_route` ASC) ,
+  CONSTRAINT `fk_trips_drivers1`
+    FOREIGN KEY (`tri_driver` )
+    REFERENCES `bustats`.`drivers` (`dri_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_trips_vehicles1`
+    FOREIGN KEY (`tri_fleetNumber` )
+    REFERENCES `bustats`.`vehicles` (`veh_fleetNumber` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_trips_routes1`
+    FOREIGN KEY (`tri_route` )
+    REFERENCES `bustats`.`routes` (`rou_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `bustats`.`stops`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `bustats`.`stops` (
+  `sto_id` INT NOT NULL ,
+  `sto_name` VARCHAR(45) NULL ,
+  `sto_lat` DOUBLE UNSIGNED NULL ,
+  `sto_lon` DOUBLE NULL ,
+  PRIMARY KEY (`sto_id`) )
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `bustats`.`routes_has_stops`
+-- -----------------------------------------------------
+CREATE  TABLE IF NOT EXISTS `bustats`.`routes_has_stops` (
+  `routes_rou_id` INT NOT NULL ,
+  `stops_sto_id` INT NOT NULL ,
+  PRIMARY KEY (`routes_rou_id`, `stops_sto_id`) ,
+  INDEX `fk_routes_has_stops_stops1_idx` (`stops_sto_id` ASC) ,
+  INDEX `fk_routes_has_stops_routes1_idx` (`routes_rou_id` ASC) ,
+  CONSTRAINT `fk_routes_has_stops_routes1`
+    FOREIGN KEY (`routes_rou_id` )
+    REFERENCES `bustats`.`routes` (`rou_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_routes_has_stops_stops1`
+    FOREIGN KEY (`stops_sto_id` )
+    REFERENCES `bustats`.`stops` (`sto_id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
